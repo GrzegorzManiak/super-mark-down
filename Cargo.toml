@@ -1,0 +1,5 @@
+[package]
+name = "super-markdown"
+version = "0.1.0"
+authors = ["Grzegorz Maniak <im@grzegorz.ie>"]
+readme = "README.md"
