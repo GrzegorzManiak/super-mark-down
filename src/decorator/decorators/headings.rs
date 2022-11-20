@@ -1,7 +1,8 @@
 use crate::decorator::{
     Decorator, 
     Config, 
-    Position
+    Position, 
+    Parameter
 };
 
 
@@ -16,7 +17,10 @@ impl Decorator for H1 {
     }
 
     fn get_config(&self) -> Config {
-        Config { start: Position::Start }
+        Config { 
+            start: Position::Start,
+            allow_params: Parameter::Both
+        }
     }
 
     fn clone(&self) -> Box<dyn Decorator> {
@@ -37,7 +41,10 @@ impl Decorator for H2 {
     }
 
     fn get_config(&self) -> Config {
-        Config { start: Position::Start }
+        Config { 
+            start: Position::Start,
+            allow_params: Parameter::Both
+        }
     }
 
     fn clone(&self) -> Box<dyn Decorator> {
@@ -58,7 +65,10 @@ impl Decorator for H3 {
     }
 
     fn get_config(&self) -> Config {
-        Config { start: Position::Start }
+        Config { 
+            start: Position::Start,
+            allow_params: Parameter::Both
+        }
     }
 
     fn clone(&self) -> Box<dyn Decorator> {
@@ -79,7 +89,10 @@ impl Decorator for H4 {
     }
 
     fn get_config(&self) -> Config {
-        Config { start: Position::Start }
+        Config { 
+            start: Position::Start,
+            allow_params: Parameter::Both
+        }
     }
 
     fn clone(&self) -> Box<dyn Decorator> {
@@ -100,7 +113,10 @@ impl Decorator for H5 {
     }
 
     fn get_config(&self) -> Config {
-        Config { start: Position::Start }
+        Config { 
+            start: Position::Start,
+            allow_params: Parameter::Both
+        }
     }
 
     fn clone(&self) -> Box<dyn Decorator> {
@@ -121,7 +137,10 @@ impl Decorator for H6 {
     }
 
     fn get_config(&self) -> Config {
-        Config { start: Position::Start }
+        Config { 
+            start: Position::Start,
+            allow_params: Parameter::Both
+        }
     }
 
     fn clone(&self) -> Box<dyn Decorator> {

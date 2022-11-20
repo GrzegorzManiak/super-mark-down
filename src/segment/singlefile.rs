@@ -5,6 +5,7 @@ use super::constants::Keys;
 pub fn parse(
     buffer: &mut Vec<String>,
     output: &mut Vec<String>,
+    keys: &Keys,
     line: &str,
 ) {
     // 
@@ -30,13 +31,13 @@ pub fn parse(
             // -- If the buffer is empty, we start from scratch
             // By checking if the line starts with a key word
 
-            match Keys::starts_with_key(line) {
-                Some(_key) => {
+            match keys.starts_with_key_and_scope(line) {
+                true => {
                     // -- If the line starts with a key word, we add it to the buffer
                     buffer.push(line.to_string());
                 }
 
-                None => {
+                false => {
                     // -- If the line doesn't start with a key word, we add it to the output
                     output.push(line.to_string());
 
@@ -52,21 +53,27 @@ pub fn parse(
             let full_line = buffer.join("");
 
             // -- Check if the full line is valid
-            match Keys::starts_with_key(&full_line) {
-                Some(_key) => {
+            match keys.starts_with_key_and_scope(&full_line) {
+                true => {
                     match Keys::validate_scope(&full_line) {
                         Some((_scope_start, scope_end)) => {
-                            // -- Split the full line at the end of the scope
-                            let split = full_line.split_at(scope_end);
-        
-                            // -- Add the first part of the split to the output
+                            //
+                            // -- If the scope is valid, we add it to the output
+                            // and clear the buffer, if the key is a meta key
+                            // we split the line into two parts on the scope end
+                            // if the key is not a meta key, we don't split the line
+                            //
+                            let split = match keys.is_meta(&full_line) {
+                                true => full_line.split_at(scope_end + 1),
+                                false => (full_line.as_str(), ""),
+                            };
+
                             output.push(split.0.to_string());
-        
-                            // -- Set the buffer to the second part of the split
                             buffer.clear();
-                           
-                            // -- Check if the second part has any content
+
+                            // -- Check if the split.2 has any data
                             if split.1.len() > 0 {
+                                // -- If it does, we add it to the buffer
                                 buffer.push(split.1.to_string());
                             }
                         }
@@ -75,7 +82,7 @@ pub fn parse(
                     }
                 }
 
-                None => {
+                false => {
                     // -- If the full line dose not start with a key word, 
                     // we add it to the output
                     output.push(full_line);
@@ -96,25 +103,29 @@ pub fn parse(
             combined.push_str(line);
 
             // -- Check if the combined string is valid
-            match Keys::starts_with_key(&combined) {
+            match keys.starts_with_key_and_scope(&combined) {
 
                 // THIS IS a key word
-                Some(_key) => {
+                true => {
                     match Keys::validate_scope(&combined) {
                         Some((_scope_start, scope_end)) => {
-                            
-                            // -- Split the combined string at the end of the scope
-                            // we add one, as we want to include the scope end character
-                            let split = combined.split_at(scope_end + 1);
-        
-                            // -- Add the first part of the split to the output
-                            output.push(split.0.to_string());
-        
+                            //
+                            // Same as above, if the scope is valid, we add it to the output
+                            // and clear the buffer, if the key is a meta key
+                            // we split the line into two parts on the scope end
+                            // if the key is not a meta key, we don't split the line
+                            //
+                            let split = match keys.is_meta(&combined) {
+                                true => combined.split_at(scope_end + 1),
+                                false => (combined.as_str(), ""),
+                            };
 
-                            // -- Clear the buffer and Set the buffer to the 
-                            // second part of the split if it has any content               
+                            output.push(split.0.to_string());
                             buffer.clear();
+
+                            // -- Check if the split.2 has any data
                             if split.1.len() > 0 {
+                                // -- If it does, we add it to the buffer
                                 buffer.push(split.1.to_string());
                             }
                         }
@@ -128,7 +139,7 @@ pub fn parse(
 
 
                 // THIS IS NOT a key word
-                None => {
+                false => {
                     // -- If the combined string dose not start with a key word, 
                     // we add it to the output
                     output.push(combined);

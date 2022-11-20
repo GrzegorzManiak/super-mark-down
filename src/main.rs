@@ -10,4 +10,4 @@ fn main() {
     let mut seg = Segments::new("./examples/headings.smd");
 
     seg.parse();
-}
+} 

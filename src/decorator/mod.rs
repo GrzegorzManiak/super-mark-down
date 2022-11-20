@@ -5,19 +5,24 @@ use std::collections::HashMap;
 use self::decorators::headings;
 use self::decorators::text;
 
-
+pub type DecoratorMap = HashMap<String, Box<dyn Decorator>>;
 pub enum Position { Anywhere, Start, End } // -- Where the decorator can be used
+pub enum Parameter { Inline, Class, Both, None } // -- What parameters the decorator can have
 
 // -- A configuration that a decorator has to implement
 // which gives the compiler the information it needs to
 // parse the decorator
 pub struct Config {
     pub start: Position,
+    pub allow_params: Parameter,
 }
 
 impl Config {
     pub fn new() -> Config {
-        Config { start: Position::Anywhere }
+        Config { 
+            start: Position::Anywhere,
+            allow_params: Parameter::Both
+        }
     }
 }
 
@@ -30,8 +35,8 @@ pub trait Decorator {
 }
 
 
-pub fn get_all_decorators() -> HashMap<String, Box<dyn Decorator>> {
-    let mut decorators: HashMap<String, Box<dyn Decorator>> = HashMap::new();
+pub fn get_all_decorators() -> DecoratorMap {
+    let mut decorators: DecoratorMap = HashMap::new();
 
 
     // -- Headings
@@ -56,7 +61,7 @@ pub fn get_all_decorators() -> HashMap<String, Box<dyn Decorator>> {
 }
 
 pub fn add_to_hashmap(
-    hashmap: &mut HashMap<String, Box<dyn Decorator>>, 
+    hashmap: &mut DecoratorMap,
     decorator: Box<dyn Decorator>) 
 {
     let decorators = decorator.get_decorators();

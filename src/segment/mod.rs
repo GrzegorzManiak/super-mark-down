@@ -2,6 +2,8 @@ use crate::decorator::Decorator;
 use crate::file;
 use crate::paramater::Parameter;
 
+use self::constants::Keys;
+
 pub mod constants;
 pub mod segments;
 pub mod singlefile;
@@ -77,6 +79,7 @@ impl Segments {
         // -- Create a buffer, and an output buffer
         let mut buffer = Vec::new();
         let mut output = Vec::new();
+        let keys = Keys::new();
 
         // -- Loop through the lines
         for line in lines {
@@ -84,6 +87,7 @@ impl Segments {
             singlefile::parse(
                 &mut buffer,
                 &mut output,
+                &keys,
                 line
             );
         }
