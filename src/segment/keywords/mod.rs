@@ -1,7 +1,9 @@
 use crate::decorator::{
-    get_all_decorators, 
-    DecoratorMap, 
-    Config
+    get_all_decorators,
+    config::{ 
+        DecoratorMap, 
+        Config
+    }
 };
 
 mod tests;

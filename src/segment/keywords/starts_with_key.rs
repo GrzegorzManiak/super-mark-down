@@ -1,4 +1,4 @@
-use crate::decorator::DecoratorType;
+use crate::decorator::config::DecoratorType;
 use super::Keys;
 
 impl Keys {
