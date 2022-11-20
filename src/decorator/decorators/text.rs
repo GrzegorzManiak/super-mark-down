@@ -1,4 +1,4 @@
-use crate::decorator::Decorator;
+use crate::decorator::{Decorator, Config};
 
 pub struct Bold {}
 impl Decorator for Bold {
@@ -8,6 +8,14 @@ impl Decorator for Bold {
 
     fn parse(&self, text: &str) -> String {
         format!("{}", text)
+    }
+
+    fn get_config(&self) -> Config {
+        Config::new()
+    }
+
+    fn clone(&self) -> Box<dyn Decorator> {
+        Box::new(Bold {})
     }
 }
 
@@ -22,6 +30,14 @@ impl Decorator for Italic {
     fn parse(&self, text: &str) -> String {
         format!("{}", text)
     }
+    
+    fn get_config(&self) -> Config {
+        Config::new()
+    }
+
+    fn clone(&self) -> Box<dyn Decorator> {
+        Box::new(Italic {})
+    }
 }
 
 
@@ -34,6 +50,14 @@ impl Decorator for Underline {
 
     fn parse(&self, text: &str) -> String {
         format!("{}", text)
+    }
+
+    fn get_config(&self) -> Config {
+        Config::new()
+    }
+
+    fn clone(&self) -> Box<dyn Decorator> {
+        Box::new(Underline {})
     }
 }
 
@@ -48,6 +72,14 @@ impl Decorator for Strikethrough {
     fn parse(&self, text: &str) -> String {
         format!("{}", text)
     }
+
+    fn get_config(&self) -> Config {
+        Config::new()
+    }
+
+    fn clone(&self) -> Box<dyn Decorator> {
+        Box::new(Strikethrough {})
+    }
 }
 
 
@@ -60,6 +92,14 @@ impl Decorator for Code {
 
     fn parse(&self, text: &str) -> String {
         format!("{}", text)
+    }
+
+    fn get_config(&self) -> Config {
+        Config::new()
+    }
+
+    fn clone(&self) -> Box<dyn Decorator> {
+        Box::new(Code {})
     }
 }
 
@@ -74,6 +114,14 @@ impl Decorator for CodeBlock {
     fn parse(&self, text: &str) -> String {
         format!("{}", text)
     }
+
+    fn get_config(&self) -> Config {
+        Config::new()
+    }
+
+    fn clone(&self) -> Box<dyn Decorator> {
+        Box::new(CodeBlock {})
+    }
 }
 
 
@@ -87,6 +135,14 @@ impl Decorator for Link {
     fn parse(&self, text: &str) -> String {
         format!("{}", text)
     }
+
+    fn get_config(&self) -> Config {
+        Config::new()
+    }
+
+    fn clone(&self) -> Box<dyn Decorator> {
+        Box::new(Link {})
+    }
 }
 
 
@@ -99,5 +155,13 @@ impl Decorator for Image {
 
     fn parse(&self, text: &str) -> String {
         format!("{}", text)
+    }
+
+    fn get_config(&self) -> Config {
+        Config::new()
+    }
+
+    fn clone(&self) -> Box<dyn Decorator> {
+        Box::new(Image {})
     }
 }

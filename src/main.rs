@@ -1,3 +1,5 @@
+use segment::Segments;
+
 pub mod file;
 pub mod segment;
 
@@ -5,12 +7,7 @@ pub mod decorator;
 pub mod paramater;
 
 fn main() {
+    let mut seg = Segments::new("./examples/headings.smd");
 
-    // -- Open a test file
-    let smd = file::open::open(
-        &std::path::Path::new("./examples/headings.smd")
-    );
-
-    // -- Print the contents
-    println!("{}", smd);
+    seg.parse();
 }
