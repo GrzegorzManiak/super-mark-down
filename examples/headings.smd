@@ -1,18 +1,25 @@
-@headings = [
-    ggggg = ''
+@class = [
+    param = '1'
 ]
 
-@other_class = [
-    sdf = ''
-]
+#:class Im a heading with a class
+#[
+    inline: '2'
+] im a Heading with inline code
+## Im a heading without anything
 
-#:headings Im a big heading
-## Im a smaller heading
-###[
-    something = 'd'
-] Im a smaller x2 heading
-####:headings Im a smaller x3 heading
-#####:headings Im a smaller x4 heading
-######:headings Im a smaller x5 heading
+im just some **paragraph**[
+    link: 'http'
+] with inline decorators
 
-###[somethingEEE = 'd'] Im a smaller x2 heading
+well im just some text too <with>(other_class) a class
+
+#[
+    text: here
+] im a heading with *another*(other) class 
+
+#[
+    link: 'ff'
+] im a heading with an *inline*[
+    something: other
+] class 

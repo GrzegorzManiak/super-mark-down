@@ -1,12 +1,14 @@
 use crate::decorator::{
     DecoratorMap, 
     get_all_decorators, 
-    Parameter
+    Parameter, 
+    DecoratorType, 
+    Config
 };
 
 pub struct Keys {
     decorators: DecoratorMap,
-    scope_keys: Vec<String>,
+    decorator_configurations: Vec<Config>
 }
 
 impl Keys {
@@ -30,28 +32,19 @@ impl Keys {
 
     pub fn new() -> Self {
         let decorators = get_all_decorators();
-        let mut scope_keys = Vec::new();
+        let mut configurations = Vec::new();
 
 
         // -- Create a list of all the scope keys
         for decorator in decorators.values() {
-            
-            // -- Check if the decorator has a scope key
-            match decorator.get_config().allow_params {
-                Parameter::None => continue,
-                _ => {
-                    let keys = decorator.get_decorators();
-                    for key in keys {
-                        scope_keys.push(key);
-                    }
-                }
-            }
+            let config = decorator.get_config();
+            configurations.push(config);
         }
 
         
         Self {
             decorators,
-            scope_keys,
+            decorator_configurations: configurations,
         }
     }
 
@@ -76,75 +69,92 @@ impl Keys {
         line.starts_with(Keys::META)
     }
 
-    pub fn starts_with_key(&self, text: &str) -> 
-        Option<String> 
+
+    pub fn starts_with_key(&self, text: &str) -> Option<String>
     {
-        // -- keys to check by default
-        // other keys can be added by decorators
-        let mut keys = vec![
-            Keys::IMPORT.to_string(),
-            Keys::META.to_string()
-        ];
+        if self.is_meta(text) { return Some(
+            Keys::META.to_string()) }
+    
 
+        for config in self.decorator_configurations.iter() {
+            match &config.decorator {
+                DecoratorType::Single(key) => {
+                    if text.starts_with(key) {
+                        let split = self.split_at(text, Keys::SCOPE_START);
+                        let split = self.split_at(&split[0], Keys::ASSIGNMENT);
+                        let split = self.split_at(&split[0], Keys::SPACE);
+                        let split = self.split_at(&split[0], Keys::TAB);
 
-        // -- Append the scope keys to the list
-        keys.append(&mut self.scope_keys.clone());
+                        // -- Check if the key is a scope key
+                        if split[0] == key.to_owned() {
+                            return Some(key.to_owned());
+                        }
+                    }
+                },
 
-
-        // -- Check if the text starts with any of the keys
-        for key in keys {
-            //
-            // since we are checking if the text starts with a key
-            // so we can check for scope, the character right after
-            // the key should be:
-            // 1: a space / tab     (Not scope)
-            // 2: Keys::SCOPE_START (Scope)
-            // 3: Keys::ASSIGNMENT  (Not scope)
-            //
-            // EXCEPTIONS:
-            // 1: Meta keys, they can be followed by anything
-            //
-            // if the character is not one of the above, then it is
-            // not this key
-            //
-
-            // Lets split the text into two parts
-            // The first part is the key
-            // The second part is the rest of the text
-            
-            // Split at:
-            // - Keys::SCOPE_START
-            // - Keys::ASSIGNMENT
-            // - Keys::SPACE
-            // - Keys::TAB
-            
-            if text.starts_with(&key) {
-                let split = self.split_at(text, Keys::SCOPE_START);
-                let split = self.split_at(&split[0], Keys::ASSIGNMENT);
-                let split = self.split_at(&split[0], Keys::SPACE);
-                let split = self.split_at(&split[0], Keys::TAB);
-
-                // -- Check if the key is a meta key
-                if key == Keys::META {
-                    return Some(key);
-                }
-
-                // -- Check if the key is a scope key
-                if split[0] == key {
-                    return Some(key);
-                }
+                _ => {}
             }
-
-            
         }
-
 
         // -- Return none
         None
     }
 
-    pub fn starts_with_key_and_scope(&self, text: &str) -> 
-        bool
+    
+    fn contains_key(&self, text: &str) -> Option<String> 
+    {
+
+        //
+        // This differs from starts_with_key
+        // as this returns true if the text contains the key
+        // anywhere in the text, caused by the decorator::Position 
+        // enum.
+        //
+        // We still need to check if its the full key, not just
+        // a part of it.
+        //
+
+        for config in self.decorator_configurations.iter() {
+            match &config.decorator {
+                DecoratorType::Wrapper(start, _end) => {
+                    if text.contains(start) {
+                        // -- Get the postion of the key in the text
+                        let position = text.find(start).unwrap();
+                        let end_position = position + start.len();
+                        
+                        match &config.allow_touching {
+                            true => return Some(start.to_owned()),
+                            false => {
+                                // make sure the key is not touching
+                                // any text on either side
+                                if text.len() < end_position { return None; }
+
+
+                                let before = &text[position - 1..position];
+                                let after = &text[end_position..end_position + 1];
+
+
+                                if before == Keys::EMPTY && 
+                                    after == Keys::EMPTY 
+                                {
+                                    return Some(start.to_owned());
+                                }
+                            }
+                        }
+                    }
+                },
+
+                _ => {}
+            }
+        }
+        
+
+        // -- Return none
+        None
+    }
+
+
+    pub fn contains_key_and_scope(&self, text: &str) -> bool
     {
         // -- Check if its a meta key
         if text.starts_with(Keys::META) {
@@ -153,11 +163,14 @@ impl Keys {
 
         // -- Check if the text starts with any of the keys
         match self.starts_with_key(text) {
-            None => return false,
+            None => {
+                // -- Check if the text contains any of the keys
+                return self.contains_key(text) != None;
+            }
             Some(key) => {
                 // -- Check if the key is imeediately 
                 // followed by a scope opening
-                if text.starts_with(&format!("{}{}", key, Keys::SCOPE_START)) {
+                if text.contains(&format!("{}{}", key, Keys::SCOPE_START)) {
                     // -- Return the key and scope
                     return true;
                 }
@@ -168,9 +181,45 @@ impl Keys {
         false
     }
 
+    pub fn contains_scope(&self, text: &str) -> bool
+    {
+        // -- Check if the text contains a scope
+        if !text.contains(Keys::SCOPE_START) { 
+            return false; }
+
+        
+        // -- Get the position of the scope
+        let position = text.find(Keys::SCOPE_START).unwrap();
+
+        // -- Make sure the scope is not escaped
+        if text[position - 1..position] == Keys::ESCAPE.to_owned() {
+            return false; }
+
+        // -- make sure the scope is touching a key
+        for config in self.decorator_configurations.iter() {
+            match &config.decorator {
+                // -- If the decorator is a wrapper, check the end key
+                // instead of the start key, as thats where the user
+                // will be able to add parameters
+                DecoratorType::Wrapper(_start, end) => {
+                    let formated = format!("{}{}", end, Keys::SCOPE_START);
+                    if text.contains(&formated) { return true; }
+                },
+
+                DecoratorType::Single(key) => {
+                    let formated = format!("{}{}", key, Keys::SCOPE_START);
+                    if text.starts_with(&formated) { return true; }
+                },
+            }
+        }
+
+        // -- Return none
+        false
+    }
+
     pub fn validate_scope (
         line: &str,
-    ) -> Option<(usize, usize)> 
+    ) -> Option<Vec<(usize, usize)>> 
     {
         //
         // We need to make sure that the scope is valid
@@ -178,29 +227,62 @@ impl Keys {
         // in the scope might contain a scope opening or closing 
         // character, and it might be escaped.
         //
+        let mut scopes = Vec::new();
 
-        // -- The scope start should be the first 
-        // Key::SCOPE_START character
-        let scope_start = match line.find(Keys::SCOPE_START) {
-            Some(index) => index,
-            None => return None,
-        };
+       
+        // -- A singular line might contain multiple scopes
+        // so we need to check for all of them
+        let mut scope_start = 0;
+        let mut scope_end = 0;
+        let mut scope_depth = 0;
+        let mut escape = false;
 
+        let mut opened = 0;
+        let mut closed = 0;
+        
+        for (i, c) in line.chars().enumerate() {
+            if c.to_string() == Keys::ESCAPE {
+                escape = true;
+                continue;
+            }
 
-        // -- The scope end should be the last
-        // Key::SCOPE_END character
-        let scope_end = match line.rfind(Keys::SCOPE_END) {
-            Some(index) => index,
-            None => return None,
-        };
+            if c.to_string() == Keys::SCOPE_START {
+                if escape {
+                    escape = false;
+                    continue;
+                }
 
+                if scope_depth == 0 {
+                    scope_start = i;
+                }
 
-        // -- Check if the scope is valid
-        if scope_start > scope_end { return None; }
+                scope_depth += 1;
+                opened += 1;
+            }
 
+            if c.to_string() == Keys::SCOPE_END {
+                if escape {
+                    escape = false;
+                    continue;
+                }
 
-        // -- Return the scope start and end positions
-        Some((scope_start, scope_end))
+                scope_depth -= 1;
+                closed += 1;
+
+                if scope_depth == 0 {
+                    scope_end = i;
+                    scopes.push((scope_start, scope_end));
+                }
+            }
+        }
+
+        
+        // -- If we have more scopes opened than closed
+        // we need to return an error 
+        if opened != closed { return None; }
+        else if scopes.len() > 0 { return Some(scopes) }
+        
+        None
     }
 }
 
@@ -211,20 +293,62 @@ impl Keys {
 mod tests {
     use super::*;
 
-    //
-    // Keys::IMPORT,
-    // Keys::PROPERTIES,
-    // Keys::PROPS,
-    // Keys::META
+    // 
+    // Contains scope
     //
     #[test]
-    fn test_starts_with_import() {
-        let line = "import = \"test\"";
+    fn contains_scope_valid() {
+        let line = "im just < some >[] text";
         let keys = Keys::new();
-        let res = keys.starts_with_key(line);
+        let res = keys.contains_scope(line);
 
-        assert_eq!(res, Some(Keys::IMPORT.to_string()));
+        assert_eq!(res, true);
     }
+
+    #[test]
+    fn contains_scope_invalid() {
+        let line = "im just < some [] text";
+        let keys = Keys::new();
+        let res = keys.contains_scope(line);
+
+        assert_eq!(res, false);
+    }
+
+    #[test]
+    fn contains_scope_escaped() {
+        let line = "im just < some >\\[ text";
+        let keys = Keys::new();
+        let res = keys.contains_scope(line);
+
+        assert_eq!(res, false);
+    }
+
+    #[test]
+    fn contains_scope_one_valid_one_invalid() {
+        let line = "im just < some >[] text < some > [ text";
+        let keys = Keys::new();
+        let res = keys.contains_scope(line);
+
+        assert_eq!(res, true);
+    }
+
+
+    // 
+    // Contains key
+    //
+    #[test]
+    fn contains_key_anywhere_touple() {
+        let line = "im just < some >[] text";
+        let keys = Keys::new();
+        let res = keys.contains_key(line);
+
+        assert_eq!(res, Some("<".to_string()));
+    }
+
+
+    //
+    // Keys::META
+    //
 
     #[test]
     fn test_starts_with_meta() {
@@ -270,7 +394,7 @@ mod tests {
     fn valid_scope() {
         let line = "import = [\"test\"]";
         let res = Keys::validate_scope(line);
-        assert_eq!(res, Some((9, 16)));
+        assert_eq!(res, Some(vec![(9, 16)]));
     }
 
     #[test]
@@ -305,7 +429,21 @@ mod tests {
     fn valid_heading_scope() {
         let line = "###[somethingEEE = 'd'] Im a smaller x2 heading";
         let res = Keys::validate_scope(line);
-        assert_eq!(res, Some((3, 22)));
+        assert_eq!(res, Some(vec![(3, 22)]));
+    }
+
+    #[test]
+    fn valid_two_scopes() {
+        let line = "import = [\"test\"] import = [\"test\"]";
+        let res = Keys::validate_scope(line);
+        assert_eq!(res, Some(vec![(9, 16), (27, 34)]));
+    }
+
+    #[test]
+    fn one_valid_one_invalid_scope() {
+        let line = "import = [\"test\"] import = [\"test\"";
+        let res = Keys::validate_scope(line);
+        assert_eq!(res, None);
     }
 
 
@@ -313,28 +451,28 @@ mod tests {
     // Starts with key and scope
     //
     #[test]
-    fn starts_with_key_and_scope_inline() {
+    fn contains_key_and_scope_inline() {
         let line = "###[\"test\"]";
         let keys = Keys::new();
-        let res = keys.starts_with_key_and_scope(line);
+        let res = keys.contains_key_and_scope(line);
 
         assert_eq!(res, true);
     }
 
     #[test]
-    fn starts_with_key_and_scope_meta() {
+    fn contains_key_and_scope_meta() {
         let line = "@gdd = [\"test\"]";
         let keys = Keys::new();
-        let res = keys.starts_with_key_and_scope(line);
+        let res = keys.contains_key_and_scope(line);
 
         assert_eq!(res, true);
     }
 
     #[test]
-    fn starts_with_key_and_scope_invalid() {
+    fn contains_key_and_scope_invalid() {
         let line = "###\"test\"]";
         let keys = Keys::new();
-        let res = keys.starts_with_key_and_scope(line);
+        let res = keys.contains_key_and_scope(line);
 
         assert_eq!(res, false);
     }
