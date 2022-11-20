@@ -1,6 +1,4 @@
-use super::constants::Keys;
-
-
+use super::keywords::Keys;
 
 pub fn parse(
     buffer: &mut Vec<String>,

@@ -2,9 +2,9 @@ use crate::decorator::Decorator;
 use crate::file;
 use crate::paramater::Parameter;
 
-use self::constants::Keys;
+use self::keywords::Keys;
 
-pub mod constants;
+pub mod keywords;
 pub mod segments;
 pub mod singlefile;
 
@@ -72,7 +72,7 @@ impl Segments {
     pub fn parse(&mut self) {
         // -- Split the source into lines
         let lines = self.source.split(
-            constants::Keys::EOL
+            keywords::Keys::EOL
         ).collect::<Vec<&str>>();
 
 
