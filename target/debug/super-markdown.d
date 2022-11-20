@@ -1,0 +1,1 @@
+/home/grzegorz/Documents/GitHub/super-mark-down/target/debug/super-markdown: /home/grzegorz/Documents/GitHub/super-mark-down/src/file/mod.rs /home/grzegorz/Documents/GitHub/super-mark-down/src/file/open.rs /home/grzegorz/Documents/GitHub/super-mark-down/src/main.rs

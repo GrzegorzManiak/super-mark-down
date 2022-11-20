@@ -1,0 +1,10 @@
+(headings) [
+
+]
+
+#(headings) Im a big heading
+##(headings) Im a smaller heading
+###(headings) Im a smaller x2 heading
+####(headings) Im a smaller x3 heading
+#####(headings) Im a smaller x4 heading
+######(headings) Im a smaller x5 heading
