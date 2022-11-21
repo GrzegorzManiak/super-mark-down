@@ -1,4 +1,4 @@
-@class = [
+@class class = [
     param = '1'
 ]
 
@@ -23,3 +23,7 @@ well im just some text too <with>(other_class) a class
 ] im a heading with an *inline*[
     something: other
 ] class 
+
+@[
+    background-color: 'fff'
+]

@@ -6,12 +6,15 @@ use crate::decorator::{
     }
 };
 
-mod tests;
-mod contains_key;
-mod contains_scope;
-mod validate_scope;
-mod starts_with_key;
+pub mod tests;
+pub mod identify_keys;
+pub mod contains_key;
+pub mod contains_scope;
+pub mod validate_scope;
+pub mod starts_with_key;
 
+// key, start, end
+pub type KeyLocation = (String, usize, usize);
 
 pub struct Keys {
     decorators: DecoratorMap,
@@ -27,7 +30,6 @@ impl Keys {
     pub const CLASS_ASSIGNMENT: &str = ":";
 
     pub const ASSIGNMENT: &str = "=";
-    pub const META: &str = "@";
     pub const SEPARATOR: &str = ",";
 
     pub const EOL: &str = "\n";
@@ -74,9 +76,4 @@ impl Keys {
         split.push(current);
         split
     }
-
-
-
-
-    
 }

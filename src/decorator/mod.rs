@@ -2,8 +2,11 @@ pub mod decorators;
 pub mod config;
 
 use std::collections::HashMap;
+
 use self::decorators::headings;
+use self::decorators::meta;
 use self::decorators::text;
+
 use self::config::{
     Config,
     DecoratorMap,
@@ -36,6 +39,11 @@ pub fn get_all_decorators() -> DecoratorMap {
     add_to_hashmap(&mut decorators, Box::new(text::Underline {}));
     add_to_hashmap(&mut decorators, Box::new(text::Strikethrough {}));
     add_to_hashmap(&mut decorators, Box::new(text::Image {}));
+
+
+    // -- Meta
+    add_to_hashmap(&mut decorators, Box::new(meta::Class {}));
+    add_to_hashmap(&mut decorators, Box::new(meta::Assignment {}));
     
 
     decorators

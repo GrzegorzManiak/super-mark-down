@@ -1,6 +1,9 @@
 #[cfg(test)]
 mod tests {
-    use crate::segment::keywords::Keys;
+    use crate::segment::keywords::{
+        Keys,
+        KeyLocation
+    };
 
     // 
     // Contains scope
@@ -41,6 +44,14 @@ mod tests {
         assert_eq!(res, true);
     }
 
+    #[test]
+    fn contains_meta_valid() {
+        let line = "@config = [asdasd]";
+        let keys = Keys::new();
+        let res = keys.contains_scope(line);
+
+        assert_eq!(res, true);
+    }
 
     // 
     // Contains key
@@ -58,16 +69,6 @@ mod tests {
     //
     // Keys::META
     //
-
-    #[test]
-    fn test_starts_with_meta() {
-        let line = "@test = \"test\"";
-        let keys = Keys::new();
-        let res = keys.starts_with_key(line);
-
-        assert_eq!(res, Some(Keys::META.to_string()));
-    }
-
     #[test]
     fn test_starts_with_none() {
         let line = "test = \"test\"";
@@ -154,4 +155,25 @@ mod tests {
         let res = Keys::validate_scope(line);
         assert_eq!(res, None);
     }
+
+
+
+    //
+    // identify_keys
+    //
+    #[test]
+    fn identify_keys() {
+        let line = "@class ss";
+        let keys = Keys::new();
+
+        let mut out: Vec<KeyLocation> = Vec::new();
+        out.push((
+            "@class".to_string(),
+            0, 3
+        ));
+        let res = keys.identify_keys(line);
+
+        assert_eq!(res, out);
+    }
+
 }

@@ -4,10 +4,6 @@ use super::Keys;
 impl Keys {
     pub fn starts_with_key(&self, text: &str) -> Option<String>
     {
-        if text.starts_with(Keys::META) { return Some(
-            Keys::META.to_string()) }
-    
-
         for config in self.decorator_configurations.iter() {
             match &config.decorator 
             {
