@@ -4,6 +4,14 @@ use super::Decorator;
 pub type DecoratorMap = HashMap<String, Box<dyn Decorator>>;
 pub enum Parameter { Inline, Class, Both, None } // -- What parameters the decorator can have
 pub enum DecoratorType { Wrapper(String, String), Single(String) }
+impl DecoratorType {
+    pub fn clone(&self) -> Self {
+        match self {
+            DecoratorType::Wrapper(start, end) => DecoratorType::Wrapper(start.clone(), end.clone()),
+            DecoratorType::Single(text) => DecoratorType::Single(text.clone())
+        }
+    }
+}
 
 // -- A configuration that a decorator has to implement
 // which gives the compiler the information it needs to

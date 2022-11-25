@@ -1,9 +1,9 @@
 #[cfg(test)]
 mod tests {
-    use crate::segment::keywords::{
+    use crate::{segment::keywords::{
         Keys,
         KeyLocation
-    };
+    }, decorator::config::DecoratorType};
 
     // 
     // Contains scope
@@ -162,18 +162,109 @@ mod tests {
     // identify_keys
     //
     #[test]
-    fn identify_keys() {
+    fn identify_keys_single() {
         let line = "@class ss";
         let keys = Keys::new();
 
         let mut out: Vec<KeyLocation> = Vec::new();
-        out.push((
-            "@class".to_string(),
-            0, 3
-        ));
-        let res = keys.identify_keys(line);
+        let dec_type = DecoratorType::Single("@class".to_string());
 
-        assert_eq!(res, out);
+        out.push(keys.new_keylocation(dec_type, 0, 5));
+        let res = keys.identify_keys(line.to_string());
+
+        
+        // -- Assert
+        for (_i, out_key) in out.iter().enumerate() {
+            for (_j, res_key) in res.iter().enumerate() {
+                let out = (out_key.start, out_key.end);
+                let res = (res_key.start, res_key.end);
+
+                assert_eq!(out, res);
+            }
+        }
     }
 
+    #[test]
+    fn identify_keys_wrapper() {
+        let line = "some *text*";
+        let keys = Keys::new();
+
+        let mut exp: Vec<KeyLocation> = Vec::new();
+        let dec_type = DecoratorType::Wrapper(
+            "*".to_string(), 
+            "*".to_string()
+        );
+
+        exp.push(
+            keys.new_keylocation(dec_type, 5, 10)
+        );
+        let res = keys.identify_keys(line.to_string());
+
+
+        // -- Assert
+        for (_i, exp_key) in exp.iter().enumerate() {
+            for (_j, res_key) in res.iter().enumerate() {
+                let exp = (exp_key.start, exp_key.end);
+                let res = (res_key.start, res_key.end);
+
+                assert_eq!(res, exp);
+            }
+        }
+    }
+
+
+    #[test]
+    fn identify_multiple_key_wrappers() {
+        let line = "some *text* and <more>";
+        let keys = Keys::new();
+
+        let mut exp: Vec<KeyLocation> = Vec::new();
+
+        let bold = DecoratorType::Wrapper("*".to_string(), "*".to_string());
+        let sele = DecoratorType::Wrapper("<".to_string(), ">".to_string());
+
+        exp.push(keys.new_keylocation(bold, 5, 10));
+        exp.push(keys.new_keylocation(sele, 16, 21));
+
+        let res = keys.identify_keys(line.to_string());
+
+        
+        // -- Assert
+        for (i, exp_key) in exp.iter().enumerate() {
+            let res_key = &res[i];
+
+            let exp = (i, exp_key.start, exp_key.end);
+            let res = (i, res_key.start, res_key.end);
+
+            assert_eq!(res, exp);
+        }
+    }
+
+
+    #[test]
+    fn identify_multiple_same_wrappers() {
+        let line = "some *text* and *more*";
+        let keys = Keys::new();
+
+        let mut exp: Vec<KeyLocation> = Vec::new();
+
+        let bold1 = DecoratorType::Wrapper("*".to_string(), "*".to_string());
+        let bold2 = DecoratorType::Wrapper("*".to_string(), "*".to_string());
+
+        exp.push(keys.new_keylocation(bold1, 5, 10));
+        exp.push(keys.new_keylocation(bold2, 16, 21));
+
+        let res = keys.identify_keys(line.to_string());
+
+        
+        // -- Assert
+        for (i, exp_key) in exp.iter().enumerate() {
+            let res_key = &res[i];
+
+            let exp = (i, exp_key.start, exp_key.end);
+            let res = (i, res_key.start, res_key.end);
+
+            assert_eq!(res, exp);
+        }
+    }
 }
