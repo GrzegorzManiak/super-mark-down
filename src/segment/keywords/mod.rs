@@ -10,10 +10,11 @@ use crate::decorator::{
 
 pub mod tests;
 pub mod identify_keys;
-pub mod contains_key;
 pub mod contains_scope;
 pub mod validate_scope;
 pub mod starts_with_key;
+pub mod extrapolate_keys;
+
 
 // key, start, end
 pub struct KeyLocation {

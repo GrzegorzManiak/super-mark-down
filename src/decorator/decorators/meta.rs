@@ -47,3 +47,25 @@ impl Decorator for Assignment {
         Box::new(Assignment {})
     }
 }
+
+pub struct Selector {}
+impl Decorator for Selector {
+    fn parse(&self, text: &str) -> String {
+        format!("{}", text)
+    }
+
+    fn get_config(&self) -> Config {
+        Config {
+            allow_params: Parameter::Both,
+            decorator: DecoratorType::Wrapper(
+                "<".to_string(),
+                ">".to_string()
+            ),
+            allow_touching: true
+        }
+    }
+
+    fn clone(&self) -> Box<dyn Decorator> {
+        Box::new(Selector {})
+    }
+}

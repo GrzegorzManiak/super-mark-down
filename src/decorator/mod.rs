@@ -38,13 +38,11 @@ pub fn get_all_decorators() -> DecoratorMap {
     add_to_hashmap(&mut decorators, Box::new(text::Italic {}));
     add_to_hashmap(&mut decorators, Box::new(text::Underline {}));
     add_to_hashmap(&mut decorators, Box::new(text::Strikethrough {}));
-    add_to_hashmap(&mut decorators, Box::new(text::Image {}));
-
 
     // -- Meta
     add_to_hashmap(&mut decorators, Box::new(meta::Class {}));
     add_to_hashmap(&mut decorators, Box::new(meta::Assignment {}));
-    
+    add_to_hashmap(&mut decorators, Box::new(meta::Selector {}));
 
     decorators
 }

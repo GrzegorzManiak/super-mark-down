@@ -4,6 +4,141 @@ mod tests {
         Keys,
         KeyLocation
     }, decorator::config::DecoratorType};
+    // 
+    // Naming convention:
+    // function_name__test_name
+    // 
+
+
+
+    //
+    // Key extrapolation
+    // 
+    #[test]
+    fn key_extrapolation__single_key() {
+        let line = "im just < some >[] text";
+        let keys = Keys::new();
+        let res = keys.extrapolate_keys(line);
+
+        assert_eq!(res.keys.len(), 1);
+    }
+
+    #[test]
+    fn key_extrapolation__multiple_keys() {
+        let line = "im just < some > *text*";
+        let keys = Keys::new();
+        let res = keys.extrapolate_keys(line);
+
+        assert_eq!(res.keys.len(), 2);
+    }
+
+    #[test]
+    fn key_extrapolation__semi_nested_keys() {
+        let line = "im just < some > *text* < some >";
+        let keys = Keys::new();
+        let res = keys.extrapolate_keys(line);
+
+        assert_eq!(res.keys.len(), 3);
+    }
+
+    #[test]
+    fn key_extrapolation__nested_keys() {
+        let line = "im just < some *text* some >";
+        let keys = Keys::new();
+        let res = keys.extrapolate_keys(line);
+
+        assert_eq!(res.keys.len(), 2);
+    }
+    
+
+
+    //
+    // Escape
+    //
+    #[test]
+    fn check_escaped__escaped() {
+        let line = "im \\escaped text";
+        let key = "escaped";
+        let index = 0;
+        let keys = Keys::new();
+        let res = keys.check_escaped(line, key, index);
+
+        assert_eq!(res, true);
+    }
+
+    #[test]
+    fn check_escaped__not_escaped() {
+        let line = "im escaped text";
+        let key = "escaped";
+        let index = 0;
+        let keys = Keys::new();
+        let res = keys.check_escaped(line, key, index);
+
+        assert_eq!(res, false);
+    }
+
+    #[test]
+    fn check_escaped__escaped_escape() {
+        let line = "im \\\\escaped text";
+        let key = "escaped";
+        let index = 0;
+        let keys = Keys::new();
+        let res = keys.check_escaped(line, key, index);
+
+        assert_eq!(res, false);
+    }
+
+    #[test]
+    fn check_escaped__start_of_line() {
+        let line = "\\escaped text";
+        let key = "escaped";
+        let index = 0;
+        let keys = Keys::new();
+        let res = keys.check_escaped(line, key, index);
+
+        assert_eq!(res, true);
+    }
+
+    #[test]
+    fn check_escaped__end_of_line() {
+        let line = "escaped text\\";
+        let key = "escaped";
+        let index = 0;
+        let keys = Keys::new();
+        let res = keys.check_escaped(line, key, index);
+
+        assert_eq!(res, false);
+    }
+
+    #[test]
+    fn check_escaped__multiple_same_keys() {
+        let line = "im \\escaped \\escaped text";
+        let key = "escaped";
+
+        let keys = Keys::new();
+
+        let res1 = keys.check_escaped(line, key, 0);
+        let res2 = keys.check_escaped(line, key, 1);
+
+        assert_eq!(res1, true);
+        assert_eq!(res2, true);
+    }
+
+    #[test]
+    fn check_escaped__multiple_different_keys() {
+        let line = "im \\escaped \\other text";
+        let key1 = "escaped";
+        let key2 = "other";
+
+        let keys = Keys::new();
+
+        let res1 = keys.check_escaped(line, key1, 0);
+        let res2 = keys.check_escaped(line, key2, 0);
+
+        assert_eq!(res1, true);
+        assert_eq!(res2, true);
+    }
+
 
     // 
     // Contains scope
@@ -23,7 +158,7 @@ mod tests {
         let keys = Keys::new();
         let res = keys.contains_scope(line);
 
-        assert_eq!(res, false);
+        assert_eq!(res, true);
     }
 
     #[test]
@@ -51,18 +186,6 @@ mod tests {
         let res = keys.contains_scope(line);
 
         assert_eq!(res, true);
-    }
-
-    // 
-    // Contains key
-    //
-    #[test]
-    fn contains_key_anywhere_touple() {
-        let line = "im just < some >[] text";
-        let keys = Keys::new();
-        let res = keys.contains_key(line);
-
-        assert_eq!(res, Some("<".to_string()));
     }
 
 
@@ -95,6 +218,7 @@ mod tests {
 
         assert_eq!(res, Some("###".to_string()));
     }
+
 
 
     //

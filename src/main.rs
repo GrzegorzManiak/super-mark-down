@@ -1,4 +1,6 @@
 extern crate rand;
+extern crate uuid;
+
 use rand::Rng;
 
 use segment::Segments;

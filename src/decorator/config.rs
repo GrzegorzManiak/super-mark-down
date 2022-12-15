@@ -3,6 +3,7 @@ use super::Decorator;
 
 pub type DecoratorMap = HashMap<String, Box<dyn Decorator>>;
 pub enum Parameter { Inline, Class, Both, None } // -- What parameters the decorator can have
+#[derive(Debug, PartialEq, Eq, Hash)]
 pub enum DecoratorType { Wrapper(String, String), Single(String) }
 impl DecoratorType {
     pub fn clone(&self) -> Self {

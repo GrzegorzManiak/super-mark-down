@@ -1,0 +1,26 @@
+# headings
+## follow
+### the
+#### same
+##### style
+###### cool
+
+other *tags* works differently
+you can >mix and< match ;opeing and closing" tags together
+to nest **nest <&nest tags&>** they first need to be wraped in <> the selector tags
+
+
+@class text_black = [
+    // -- paramater = 'option'
+]
+
+
+// -- This is scope []
+[ ]
+
+
+// -- This is a meta tag @
+@class x = []
+@root = []
+@paramaters = []
+
